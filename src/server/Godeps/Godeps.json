@@ -1,0 +1,27 @@
+{
+	"ImportPath": "github.com/robsix/3ditor/src/server",
+	"GoVersion": "go1.5.1",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "code.google.com/p/go-uuid/uuid",
+			"Comment": "null-15",
+			"Rev": "35bc42037350f0078e3c974c6ea690f1926603ab"
+		},
+		{
+			"ImportPath": "github.com/daviddengcn/go-colortext",
+			"Rev": "3b18c8575a432453d41fdafb340099fff5bba2f7"
+		},
+		{
+			"ImportPath": "github.com/robsix/golog",
+			"Rev": "7ef6f3e6858ea8366fef316338f34339934c52fa"
+		},
+		{
+			"ImportPath": "github.com/robsix/json",
+			"Comment": "v0.5.0-15-geddf776",
+			"Rev": "eddf776d2a70fe8fe95233b9d682c16758887b77"
+		}
+	]
+}

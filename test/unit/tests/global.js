@@ -1,0 +1,8 @@
+require([
+    'registry'
+],
+function(
+    registry
+){
+
+});

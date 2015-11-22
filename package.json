@@ -1,34 +1,44 @@
 {
-  "name": "three.js",
-  "version": "0.73.0",
-  "description": "JavaScript 3D library",
-  "main": "build/three.js",
-  "directories": {
-    "doc": "docs",
-    "example": "examples",
-    "test": "test"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "version": "0.0.0",
+  "private": false,
+  "name": "3ditor",
+  "description": "three.js based scene creation/editor tool",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mrdoob/three.js"
+    "url": "https://github.com/robsix/3ditor"
   },
-  "keywords": [
-    "three",
-    "three.js",
-    "3d",
-    "webgl"
-  ],
-  "author": "mrdoob",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/mrdoob/three.js/issues"
-  },
-  "homepage": "http://threejs.org/",
   "devDependencies": {
-    "jscs": "^1.13.1",
-    "lodash": "^3.10.0"
+    "amdclean": "^2.4.0",
+    "bower": "",
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.7.0",
+    "grunt-contrib-compass": "^1.0.1",
+    "grunt-contrib-copy": "^0.8.0",
+    "grunt-contrib-htmlmin": "^0.6.0",
+    "grunt-contrib-jshint": "^0.11.3",
+    "grunt-contrib-requirejs": "^0.4.4",
+    "grunt-contrib-uglify": "^0.10.0",
+    "grunt-exec": "^0.4.6",
+    "grunt-json-minify": "^0.4.0",
+    "grunt-processhtml": "^0.3.7",
+    "karma": "^0.13.15",
+    "karma-chrome-launcher": "^0.2.1",
+    "karma-coverage": "^0.5.3",
+    "karma-firefox-launcher": "^0.1.4",
+    "karma-html-reporter": "^0.2.7",
+    "karma-ie-launcher": "^0.2.0",
+    "karma-jasmine": "^0.3.6",
+    "karma-phantomjs-launcher": "^0.2.1",
+    "karma-requirejs": "^0.2.2",
+    "karma-safari-launcher": "^0.1.1",
+    "node-sass": "^3.4.1",
+    "phantomjs": "^1.9.18",
+    "protractor": "~2.5.1",
+    "protractor-screenshot-reporter": "0.0.5",
+    "requirejs": "^2.1.16"
+  },
+  "scripts": {
+    "postinstall": "bower install"
   }
 }

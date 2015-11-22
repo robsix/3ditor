@@ -1,0 +1,709 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com\robsix\json\json.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" >package json
+
+import (
+        "bytes"
+        "encoding/json"
+        "errors"
+        "fmt"
+        "io"
+        "io/ioutil"
+        "reflect"
+        "strconv"
+        "os"
+)
+
+type Json struct {
+        data interface{}
+}
+
+// New returns a pointer to a new, empty `Json` object
+func New() (*Json, error) <span class="cov8" title="1">{
+        return FromString("{}")
+}</span>
+
+// FromInterface returns a pointer to a new `Json` object
+// after assigning `i` to its internal data
+func FromInterface(i interface{}) *Json <span class="cov8" title="1">{
+        return &amp;Json{i}
+}</span>
+
+// FromString returns a pointer to a new `Json` object
+// after unmarshaling `str`
+func FromString(str string) (*Json, error) <span class="cov8" title="1">{
+        return FromBytes([]byte(str))
+}</span>
+
+// FromBytes returns a pointer to a new `Json` object
+// after unmarshaling `bytes`
+func FromBytes(b []byte) (*Json, error) <span class="cov8" title="1">{
+        return FromReader(bytes.NewReader(b))
+}</span>
+
+// FromFile returns a pointer to a new `Json` object
+// after unmarshaling the contents from `file` into it
+func FromFile(file string) (*Json, error) <span class="cov8" title="1">{
+        data, err := ioutil.ReadFile(file)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return FromBytes(data)</span>
+}
+
+// FromReader returns a *Json by decoding from an io.Reader
+func FromReader(r io.Reader) (*Json, error) <span class="cov8" title="1">{
+        if r == nil </span><span class="cov8" title="1">{
+                return FromString("null")
+        }</span>
+        <span class="cov8" title="1">rc, ok := r.(io.ReadCloser)
+        if !ok </span><span class="cov8" title="1">{
+                rc = ioutil.NopCloser(r)
+        }</span>
+        <span class="cov8" title="1">return FromReadCloser(rc)</span>
+}
+
+// FromReadCloser returns a *Json by decoding from an io.ReadCloser and calls the io.ReadCloser Close method
+func FromReadCloser(rc io.ReadCloser) (*Json, error) <span class="cov8" title="1">{
+        if rc == nil </span><span class="cov8" title="1">{
+                return FromString("null")
+        }</span>
+        <span class="cov8" title="1">defer rc.Close()
+        j := &amp;Json{}
+        dec := json.NewDecoder(rc)
+        dec.UseNumber()
+        err := dec.Decode(&amp;j.data)
+        return j, err</span>
+}
+
+// ToBytes returns its marshaled data as `[]byte`
+func (j *Json) ToBytes() ([]byte, error) <span class="cov8" title="1">{
+        return j.MarshalJSON()
+}</span>
+
+// ToString returns its marshaled data as `string`
+func (j *Json) ToString() (string, error) <span class="cov8" title="1">{
+        b, err := j.ToBytes()
+        return string(b), err
+}</span>
+
+// ToPrettyBytes returns its marshaled data as `[]byte` with indentation
+func (j *Json) ToPrettyBytes() ([]byte, error) <span class="cov8" title="1">{
+        return json.MarshalIndent(&amp;j.data, "", "  ")
+}</span>
+
+// ToPrettyString returns its marshaled data as `string` with indentation
+func (j *Json) ToPrettyString() (string, error) <span class="cov8" title="1">{
+        b, err := j.ToPrettyBytes()
+        return string(b), err
+}</span>
+
+// ToFile writes the Json to the `file` with permission `perm`
+func (j *Json) ToFile(file string, perm os.FileMode) error <span class="cov8" title="1">{
+        b, _ := j.ToBytes()
+        return ioutil.WriteFile(file, b, perm)
+}</span>
+
+// ToReader returns its marshaled data as `io.Reader`
+func (j *Json) ToReader() (io.Reader, error) <span class="cov8" title="1">{
+        b, err := j.ToBytes()
+        r := bytes.NewReader(b)
+        return r, err
+}</span>
+
+// Implements the json.Marshaler interface.
+func (j *Json) MarshalJSON() ([]byte, error) <span class="cov8" title="1">{
+        return json.Marshal(&amp;j.data)
+}</span>
+
+// Implements the json.Unmarshaler interface.
+func (j *Json) UnmarshalJSON(p []byte) (error) <span class="cov8" title="1">{
+        jNew, err := FromReader(bytes.NewReader(p))
+        j.data = jNew.data
+        return err
+}</span>
+
+// Get searches for the item as specified by the path.
+// path can contain strings or ints to navigate through json
+// objects and arrays. If the given path is not present then
+// the deepest valid value is returned along with an error.
+//
+//   js.Get("top_level", "dict", 3, "foo")
+func (j *Json) Get(path ...interface{}) (*Json, *jsonPathError) <span class="cov8" title="1">{
+        tmp := j
+        for i, k := range path </span><span class="cov8" title="1">{
+                if key, ok := k.(string); ok </span><span class="cov8" title="1">{
+                        if m, err := tmp.Map(); err == nil </span><span class="cov8" title="1">{
+                                if val, ok := m[key]; ok </span><span class="cov8" title="1">{
+                                        tmp = &amp;Json{val}
+                                }</span><span class="cov8" title="1"> else {
+                                        return tmp, &amp;jsonPathError{path[:i], path[i:]}
+                                }</span>
+                        }<span class="cov8" title="1"> else {
+                                return tmp, &amp;jsonPathError{path[:i], path[i:]}
+                        }</span>
+                }<span class="cov8" title="1"> else if index, ok := k.(int); ok </span><span class="cov8" title="1">{
+                        if a, err := tmp.Array(); err == nil </span><span class="cov8" title="1">{
+                                if index &lt; 0 || index &gt;= len(a) </span><span class="cov8" title="1">{
+                                        return tmp, &amp;jsonPathError{path[:i], path[i:]}
+                                }</span><span class="cov8" title="1"> else {
+                                        tmp = &amp;Json{a[index]}
+                                }</span>
+                        }<span class="cov8" title="1"> else {
+                                return tmp, &amp;jsonPathError{path[:i], path[i:]}
+                        }</span>
+                }<span class="cov8" title="1"> else {
+                        return tmp, &amp;jsonPathError{path[:i], path[i:]}
+                }</span>
+        }
+        <span class="cov8" title="1">return tmp, nil</span>
+}
+
+// Set modifies `Json`, recursively checking/creating map keys and checking
+// array indices for the supplied path, and then finally writing in the value.
+// Set will only create maps where the current map[key] does not exist,
+// if the key exists, even if the value is nil, a new map will not be created and an
+// error wil be returned.
+func (j *Json) Set(val interface{}, path ...interface{}) *jsonPathError <span class="cov8" title="1">{
+        if len(path) == 0 </span><span class="cov8" title="1">{
+                j.data = val
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">tmp := j
+
+        for i := 0; i &lt; len(path); i++ </span><span class="cov8" title="1">{
+                if key, ok := path[i].(string); ok </span><span class="cov8" title="1">{
+                        if m, err := tmp.Map(); err == nil </span><span class="cov8" title="1">{
+                                if i == len(path)-1 </span><span class="cov8" title="1">{
+                                        m[key] = val
+                                }</span><span class="cov8" title="1"> else {
+                                        _, ok := path[i+1].(string)
+                                        _, exists := m[key]
+                                        if ok &amp;&amp; !exists </span><span class="cov8" title="1">{
+                                                m[key] = map[string]interface{}{}
+                                        }</span>
+                                        <span class="cov8" title="1">tmp = &amp;Json{m[key]}</span>
+                                }
+                        }<span class="cov8" title="1"> else {
+                                return &amp;jsonPathError{path[:i], path[i:]}
+                        }</span>
+                }<span class="cov8" title="1"> else if index, ok := path[i].(int); ok </span><span class="cov8" title="1">{
+                        if a, err := tmp.Array(); err == nil &amp;&amp; index &gt;= 0 &amp;&amp; index &lt; len(a) </span><span class="cov8" title="1">{
+                                if i == len(path)-1 </span><span class="cov8" title="1">{
+                                        a[index] = val
+                                }</span><span class="cov8" title="1"> else {
+                                        tmp = &amp;Json{a[index]}
+                                }</span>
+                        }<span class="cov8" title="1"> else {
+                                return &amp;jsonPathError{path[:i], path[i:]}
+                        }</span>
+                }<span class="cov8" title="1"> else {
+                        return &amp;jsonPathError{path[:i], path[i:]}
+                }</span>
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+
+// Del modifies `Json` maps and arrays by deleting/removing the last `path` segment if it is present,
+func (j *Json) Del(path ...interface{}) *jsonPathError <span class="cov8" title="1">{
+        if len(path) == 0 </span><span class="cov8" title="1">{
+                j.data = nil
+                return nil
+        }</span>
+
+        <span class="cov8" title="1">i := len(path)-1
+        tmp, err := j.Get(path[:i]...)
+        if err != nil </span><span class="cov8" title="1">{
+                err.MissingPath = append(err.MissingPath, path[i])
+                return err
+        }</span>
+
+        <span class="cov8" title="1">if key, ok := path[i].(string); ok </span><span class="cov8" title="1">{
+                if m, err := tmp.Map(); err != nil </span><span class="cov8" title="1">{
+                        return &amp;jsonPathError{path[:i], path[i:]}
+                }</span><span class="cov8" title="1"> else {
+                        delete(m, key)
+                }</span>
+        }<span class="cov8" title="1"> else if index, ok := path[i].(int); ok </span><span class="cov8" title="1">{
+                if a, err := tmp.Array(); err != nil </span><span class="cov8" title="1">{
+                        return &amp;jsonPathError{path[:i], path[i:]}
+                }</span><span class="cov8" title="1"> else if index &lt; 0 || index &gt;= len(a) </span><span class="cov8" title="1">{
+                        return &amp;jsonPathError{path[:i], path[i:]}
+                }</span><span class="cov8" title="1"> else {
+                        a, a[len(a)-1] = append(a[:index], a[index+1:]...), nil
+                        if i == 0 </span><span class="cov8" title="1">{
+                                j.data = a
+                        }</span><span class="cov8" title="1"> else {
+                                tmp, _ = j.Get(path[:i-1]...)
+                                if key, ok := path[i-1].(string); ok </span><span class="cov8" title="1">{
+                                        tmp.MustMap(nil)[key] = a //is this safe? should be 100% certainty ;)
+                                }</span><span class="cov8" title="1"> else if index, ok := path[i-1].(int); ok </span><span class="cov8" title="1">{
+                                        tmp.MustArray(nil)[index] = a //is this safe? should be 100% certainty ;)
+                                }</span>
+                        }
+                }
+        }<span class="cov8" title="1"> else {
+                return &amp;jsonPathError{path[:i], path[i:]}
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+// Interface returns the underlying data
+func (j *Json) Interface(path ...interface{}) (interface{}, *jsonPathError) <span class="cov8" title="1">{
+        tmp, err := j.Get(path...)
+        return tmp.data, err
+}</span>
+
+// Map type asserts to `map`
+func (j *Json) Map(path ...interface{}) (map[string]interface{}, error) <span class="cov8" title="1">{
+        tmp, err := j.Get(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">if m, ok := tmp.data.(map[string]interface{}); ok </span><span class="cov8" title="1">{
+                return m, nil
+        }</span>
+        <span class="cov8" title="1">return nil, errors.New("type assertion to map[string]interface{} failed")</span>
+}
+
+// MustMap guarantees the return of a `map[string]interface{}` (with specified default)
+//
+// useful when you want to iterate over map values in a succinct manner:
+//                for k, v := range js.MustMap(nil) {
+//                        fmt.Println(k, v)
+//                }
+func (j *Json) MustMap(def map[string]interface{}, path ...interface{}) map[string]interface{} <span class="cov8" title="1">{
+        if a, err := j.Map(path...); err == nil </span><span class="cov8" title="1">{
+                return a
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// Array type asserts to an `array`
+func (j *Json) Array(path ...interface{}) ([]interface{}, error) <span class="cov8" title="1">{
+        tmp, err := j.Get(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">if a, ok := tmp.data.([]interface{}); ok </span><span class="cov8" title="1">{
+                return a, nil
+        }</span>
+        <span class="cov8" title="1">return nil, errors.New("type assertion to []interface{} failed")</span>
+}
+
+// MustArray guarantees the return of a `[]interface{}` (with specified default)
+//
+// useful when you want to iterate over array values in a succinct manner:
+//                for i, v := range js.MustArray(nil) {
+//                        fmt.Println(i, v)
+//                }
+func (j *Json) MustArray(def []interface{}, path ...interface{}) []interface{} <span class="cov8" title="1">{
+        if a, err := j.Array(path...); err == nil </span><span class="cov8" title="1">{
+                return a
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// Bool type asserts to `bool`
+func (j *Json) Bool(path ...interface{}) (bool, error) <span class="cov8" title="1">{
+        tmp, err := j.Get(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return false, err
+        }</span>
+        <span class="cov8" title="1">if s, ok := tmp.data.(bool); ok </span><span class="cov8" title="1">{
+                return s, nil
+        }</span>
+        <span class="cov8" title="1">return false, errors.New("type assertion to bool failed")</span>
+}
+
+// MustBool guarantees the return of a `bool` (with specified default)
+//
+// useful when you explicitly want a `bool` in a single value return context:
+//     myFunc(js.MustBool(true))
+func (j *Json) MustBool(def bool, path ...interface{}) bool <span class="cov8" title="1">{
+        if b, err := j.Bool(path...); err == nil </span><span class="cov8" title="1">{
+                return b
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// String type asserts to `string`
+func (j *Json) String(path ...interface{}) (string, error) <span class="cov8" title="1">{
+        tmp, err := j.Get(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return "", err
+        }</span>
+        <span class="cov8" title="1">if s, ok := tmp.data.(string); ok </span><span class="cov8" title="1">{
+                return s, nil
+        }</span>
+        <span class="cov8" title="1">return "", errors.New("type assertion to string failed")</span>
+}
+
+// MustString guarantees the return of a `string` (with specified default)
+//
+// useful when you explicitly want a `string` in a single value return context:
+//     myFunc(js.MustString("my_default"))
+func (j *Json) MustString(def string, path ...interface{}) string <span class="cov8" title="1">{
+        if s, err := j.String(path...); err == nil </span><span class="cov8" title="1">{
+                return s
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// StringArray type asserts to an `array` of `string`
+func (j *Json) StringArray(path ...interface{}) ([]string, error) <span class="cov8" title="1">{
+        arr, err := j.Array(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">retArr := make([]string, 0, len(arr))
+        for _, a := range arr </span><span class="cov8" title="1">{
+                if s, ok := a.(string); a == nil || !ok </span><span class="cov8" title="1">{
+                        return nil, errors.New("none string value encountered")
+                }</span><span class="cov8" title="1">else {
+                        retArr = append(retArr, s)
+                }</span>
+        }
+        <span class="cov8" title="1">return retArr, nil</span>
+}
+
+// MustStringArray guarantees the return of a `[]string` (with specified default)
+//
+// useful when you want to iterate over array values in a succinct manner:
+//                for i, s := range js.MustStringArray(nil) {
+//                        fmt.Println(i, s)
+//                }
+func (j *Json) MustStringArray(def []string, path ...interface{}) []string <span class="cov8" title="1">{
+        if a, err := j.StringArray(path...); err == nil </span><span class="cov8" title="1">{
+                return a
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// Int coerces into an int
+func (j *Json) Int(path ...interface{}) (int, error) <span class="cov8" title="1">{
+        f, err := j.Float64(path...)
+        return int(f), err
+}</span>
+
+// MustInt guarantees the return of an `int` (with specified default)
+//
+// useful when you explicitly want an `int` in a single value return context:
+//     myFunc(js.MustInt(5150))
+func (j *Json) MustInt(def int, path ...interface{}) int <span class="cov8" title="1">{
+        if i, err := j.Int(path...); err == nil </span><span class="cov8" title="1">{
+                return i
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// IntArray type asserts to an `array` of `int`
+func (j *Json) IntArray(path ...interface{}) ([]int, error) <span class="cov8" title="1">{
+        arr, err := j.Array(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">retArr := make([]int, 0, len(arr))
+        for _, a := range arr </span><span class="cov8" title="1">{
+                tmp := &amp;Json{a}
+                if i, err := tmp.Int(); err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span><span class="cov8" title="1"> else {
+                        retArr = append(retArr, i)
+                }</span>
+        }
+        <span class="cov8" title="1">return retArr, nil</span>
+}
+
+// MustIntArray guarantees the return of a `[]int` (with specified default)
+//
+// useful when you want to iterate over array values in a succinct manner:
+//                for i, s := range js.MustIntArray(nil) {
+//                        fmt.Println(i, s)
+//                }
+func (j *Json) MustIntArray(def []int, path ...interface{}) []int <span class="cov8" title="1">{
+        if a, err := j.IntArray(path...); err == nil </span><span class="cov8" title="1">{
+                return a
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// Float64 coerces into a float64
+func (j *Json) Float64(path ...interface{}) (float64, error) <span class="cov8" title="1">{
+        tmp, err := j.Get(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return 0, err
+        }</span>
+        <span class="cov8" title="1">switch tmp.data.(type) </span>{
+        <span class="cov8" title="1">case json.Number:
+                return tmp.data.(json.Number).Float64()</span>
+        <span class="cov8" title="1">case float32, float64:
+                return reflect.ValueOf(tmp.data).Float(), nil</span>
+        <span class="cov8" title="1">case int, int8, int16, int32, int64:
+                return float64(reflect.ValueOf(tmp.data).Int()), nil</span>
+        <span class="cov8" title="1">case uint, uint8, uint16, uint32, uint64:
+                return float64(reflect.ValueOf(tmp.data).Uint()), nil</span>
+        }
+        <span class="cov8" title="1">return 0, errors.New("invalid value type")</span>
+}
+
+// MustFloat64 guarantees the return of a `float64` (with specified default)
+//
+// useful when you explicitly want a `float64` in a single value return context:
+//     myFunc(js.MustFloat64(5.150))
+func (j *Json) MustFloat64(def float64, path ...interface{}) float64 <span class="cov8" title="1">{
+        if f, err := j.Float64(path...); err == nil </span><span class="cov8" title="1">{
+                return f
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// Float64Array type asserts to an `array` of `float64`
+func (j *Json) Float64Array(path ...interface{}) ([]float64, error) <span class="cov8" title="1">{
+        arr, err := j.Array(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">retArr := make([]float64, 0, len(arr))
+        for _, a := range arr </span><span class="cov8" title="1">{
+                tmp := &amp;Json{a}
+                if f, err := tmp.Float64(); err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span><span class="cov8" title="1"> else {
+                        retArr = append(retArr, f)
+                }</span>
+        }
+        <span class="cov8" title="1">return retArr, nil</span>
+}
+
+// MustFloat64Array guarantees the return of a `[]float64` (with specified default)
+//
+// useful when you want to iterate over array values in a succinct manner:
+//                for i, s := range js.MustFloat64Array(nil) {
+//                        fmt.Println(i, s)
+//                }
+func (j *Json) MustFloat64Array(def []float64, path ...interface{}) []float64 <span class="cov8" title="1">{
+        if a, err := j.Float64Array(path...); err == nil </span><span class="cov8" title="1">{
+                return a
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// Int64 coerces into an int64
+func (j *Json) Int64(path ...interface{}) (int64, error) <span class="cov8" title="1">{
+        tmp, err := j.Get(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return 0, err
+        }</span>
+        <span class="cov8" title="1">switch tmp.data.(type) </span>{
+        <span class="cov8" title="1">case json.Number:
+                return tmp.data.(json.Number).Int64()</span>
+        <span class="cov8" title="1">case float32, float64:
+                return int64(reflect.ValueOf(tmp.data).Float()), nil</span>
+        <span class="cov8" title="1">case int, int8, int16, int32, int64:
+                return reflect.ValueOf(tmp.data).Int(), nil</span>
+        <span class="cov8" title="1">case uint, uint8, uint16, uint32, uint64:
+                return int64(reflect.ValueOf(tmp.data).Uint()), nil</span>
+        }
+        <span class="cov8" title="1">return 0, errors.New("invalid value type")</span>
+}
+
+// MustInt64 guarantees the return of an `int64` (with specified default)
+//
+// useful when you explicitly want an `int64` in a single value return context:
+//     myFunc(js.MustInt64(5150))
+func (j *Json) MustInt64(def int64, path ...interface{}) int64 <span class="cov8" title="1">{
+        if i, err := j.Int64(path...); err == nil </span><span class="cov8" title="1">{
+                return i
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// Int64Array type asserts to an `array` of `int64`
+func (j *Json) Int64Array(path ...interface{}) ([]int64, error) <span class="cov8" title="1">{
+        arr, err := j.Array(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">retArr := make([]int64, 0, len(arr))
+        for _, a := range arr </span><span class="cov8" title="1">{
+                tmp := &amp;Json{a}
+                if i, err := tmp.Int64(); err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span><span class="cov8" title="1"> else {
+                        retArr = append(retArr, i)
+                }</span>
+        }
+        <span class="cov8" title="1">return retArr, nil</span>
+}
+
+// MustInt64Array guarantees the return of a `[]int64` (with specified default)
+//
+// useful when you want to iterate over array values in a succinct manner:
+//                for i, s := range js.MustInt64Array(nil) {
+//                        fmt.Println(i, s)
+//                }
+func (j *Json) MustInt64Array(def []int64, path ... interface{}) []int64 <span class="cov8" title="1">{
+        if a, err := j.Int64Array(path...); err == nil </span><span class="cov8" title="1">{
+                return a
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// Uint64 coerces into an uint64
+func (j *Json) Uint64(path ...interface{}) (uint64, error) <span class="cov8" title="1">{
+        tmp, err := j.Get(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return 0, err
+        }</span>
+        <span class="cov8" title="1">switch tmp.data.(type) </span>{
+        <span class="cov8" title="1">case json.Number:
+                return strconv.ParseUint(tmp.data.(json.Number).String(), 10, 64)</span>
+        <span class="cov8" title="1">case float32, float64:
+                return uint64(reflect.ValueOf(tmp.data).Float()), nil</span>
+        <span class="cov8" title="1">case int, int8, int16, int32, int64:
+                return uint64(reflect.ValueOf(tmp.data).Int()), nil</span>
+        <span class="cov8" title="1">case uint, uint8, uint16, uint32, uint64:
+                return reflect.ValueOf(tmp.data).Uint(), nil</span>
+        }
+        <span class="cov8" title="1">return 0, errors.New("invalid value type")</span>
+}
+
+// MustUInt64 guarantees the return of an `uint64` (with specified default)
+//
+// useful when you explicitly want an `uint64` in a single value return context:
+//     myFunc(js.MustUint64(5150))
+func (j *Json) MustUint64(def uint64, path ...interface{}) uint64 <span class="cov8" title="1">{
+        if i, err := j.Uint64(path...); err == nil </span><span class="cov8" title="1">{
+                return i
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+// Uint64Array type asserts to an `array` of `uint64`
+func (j *Json) Uint64Array(path ...interface{}) ([]uint64, error) <span class="cov8" title="1">{
+        arr, err := j.Array(path...)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">retArr := make([]uint64, 0, len(arr))
+        for _, a := range arr </span><span class="cov8" title="1">{
+                tmp := &amp;Json{a}
+                if u, err := tmp.Uint64(); err != nil </span><span class="cov8" title="1">{
+                        return nil, err
+                }</span><span class="cov8" title="1"> else {
+                        retArr = append(retArr, u)
+                }</span>
+        }
+        <span class="cov8" title="1">return retArr, nil</span>
+}
+
+// MustUint64Array guarantees the return of a `[]uint64` (with specified default)
+//
+// useful when you want to iterate over array values in a succinct manner:
+//                for i, s := range js.MustUint64Array(nil) {
+//                        fmt.Println(i, s)
+//                }
+func (j *Json) MustUint64Array(def []uint64, path ...interface{}) []uint64 <span class="cov8" title="1">{
+        if a, err := j.Uint64Array(path...); err == nil </span><span class="cov8" title="1">{
+                return a
+        }</span>
+        <span class="cov8" title="1">return def</span>
+}
+
+type jsonPathError struct {
+        FoundPath   []interface{}
+        MissingPath []interface{}
+}
+
+func (e *jsonPathError) Error() string <span class="cov8" title="1">{
+        return fmt.Sprintf("found: %v missing: %v", e.FoundPath, e.MissingPath)
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible = document.getElementById('file0');
+		files.addEventListener('change', onChange, false);
+		function onChange() {
+			visible.style.display = 'none';
+			visible = document.getElementById(files.value);
+			visible.style.display = 'block';
+			window.scrollTo(0, 0);
+		}
+	})();
+	</script>
+</html>
