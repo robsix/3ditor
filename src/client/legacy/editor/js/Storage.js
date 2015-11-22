@@ -11,7 +11,7 @@ var Storage = function () {
 		return { init: function () {}, get: function () {}, set: function () {}, clear: function () {} };
 	}
 
-	var name = 'threejs-editor';
+	var name = '3ditor';
 	var version = 1;
 
 	var database;

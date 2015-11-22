@@ -4,11 +4,11 @@
 
 var Config = function () {
 
-	var name = 'threejs-editor';
+	var name = '3ditor';
 
 	var storage = {
 		'autosave': true,
-		'theme': 'legacy/editor/css/light.css',
+		'theme': 'legacy/editor/css/dark.css',
 
 		'project/renderer': 'WebGLRenderer',
 		'project/renderer/antialias': true,
