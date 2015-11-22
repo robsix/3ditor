@@ -1,0 +1,13 @@
+{
+  "name": "three",
+  "_cacheHeaders": {
+    "ETag": "\"e41c0cbdd250f544d62c0e9ef1e195f2dee11219\"",
+    "Content-Length": "811837",
+    "Content-Type": "text/plain; charset=utf-8"
+  },
+  "_release": "e-tag:e41c0cbdd",
+  "main": "index.js",
+  "_source": "https://raw.githubusercontent.com/mrdoob/three.js/r73/build/three.js",
+  "_target": "*",
+  "_originalSource": "https://raw.githubusercontent.com/mrdoob/three.js/r73/build/three.js"
+}

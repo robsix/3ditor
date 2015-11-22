@@ -3,7 +3,6 @@ src/**/*.css
 src/**/*.exe
 build/
 node_modules/
-src/client/lib/
 test/unit/coverage
 test/unit/results
 test/e2e/results
