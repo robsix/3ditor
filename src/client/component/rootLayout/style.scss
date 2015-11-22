@@ -1,0 +1,9 @@
+@import "../../global";
+
+cp-root-layout {
+}
+
+html, body{
+  @include default();
+  @include fill();
+}

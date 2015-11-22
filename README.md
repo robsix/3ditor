@@ -1,7 +1,7 @@
 3ditor
 ======
 
-A [Three.js](https://github.com/mrdoob/three.js) based scene creation/editor tool, written with [**Angular**](https://angularjs.org/), [**Require**](http://requirejs.org/)
+A [**Three.js**](https://github.com/mrdoob/three.js) based scene creation/editor tool, written with [**Angular**](https://angularjs.org/), [**Require**](http://requirejs.org/)
 and [**SASS**](http://sass-lang.com/) on the client side and [**Go**](http://golang.org/) with [**Gorilla Toolkit**](http://www.gorillatoolkit.org/)
 on the server side. The project is configured as a single page web app. The project comes with:
 

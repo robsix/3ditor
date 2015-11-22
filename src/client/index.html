@@ -3,10 +3,7 @@
 	<head>
 		<title>3ditor</title>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	</head>
-	<body ontouchstart="">
-		<link href="legacy/editor/css/main.css" rel="stylesheet" />
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"><link href="legacy/editor/css/main.css" rel="stylesheet" />
 		<link id="theme" href="legacy/editor/css/dark.css" rel="stylesheet" />
 
 		<script src="lib/three/index.js"></script>
@@ -125,196 +122,206 @@
 
 		<script>
 
-			window.URL = window.URL || window.webkitURL;
-			window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
+			document.addEventListener('DOMContentLoaded', function(){
+				window.URL = window.URL || window.webkitURL;
+				window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder;
 
-			Number.prototype.format = function (){
-				return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
-			};
+				Number.prototype.format = function (){
+					return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+				};
 
-			//
+				//
 
-			var editor = new Editor();
+				var editor = new Editor();
 
-			var viewport = new Viewport( editor );
-			document.body.appendChild( viewport.dom );
+				var viewport = new Viewport( editor );
+				document.body.appendChild( viewport.dom );
 
-			var player = new Player( editor );
-			document.body.appendChild( player.dom );
+				var player = new Player( editor );
+				document.body.appendChild( player.dom );
 
-			var script = new Script( editor );
-			document.body.appendChild( script.dom );
+				var script = new Script( editor );
+				document.body.appendChild( script.dom );
 
-			var toolbar = new Toolbar( editor );
-			document.body.appendChild( toolbar.dom );
+				var toolbar = new Toolbar( editor );
+				document.body.appendChild( toolbar.dom );
 
-			var menubar = new Menubar( editor );
-			document.body.appendChild( menubar.dom );
+				var menubar = new Menubar( editor );
+				document.body.appendChild( menubar.dom );
 
-			var sidebar = new Sidebar( editor );
-			document.body.appendChild( sidebar.dom );
+				var sidebar = new Sidebar( editor );
+				document.body.appendChild( sidebar.dom );
 
-			var modal = new UI.Modal();
-			document.body.appendChild( modal.dom );
+				var modal = new UI.Modal();
+				document.body.appendChild( modal.dom );
 
-			//
+				//
 
-			editor.setTheme( editor.config.getKey( 'theme' ) );
+				editor.setTheme( editor.config.getKey( 'theme' ) );
 
-			editor.storage.init( function () {
+				editor.storage.init( function () {
 
-				editor.storage.get( function ( state ) {
+					editor.storage.get( function ( state ) {
 
-					if ( state !== undefined ) {
+						if ( state !== undefined ) {
 
-						editor.fromJSON( state );
+							editor.fromJSON( state );
 
-					}
+						}
 
-					var selected = editor.config.getKey( 'selected' );
+						var selected = editor.config.getKey( 'selected' );
 
-					if ( selected !== undefined ) {
+						if ( selected !== undefined ) {
 
-						editor.selectByUuid( selected );
+							editor.selectByUuid( selected );
 
-					}
+						}
+
+					} );
+
+					//
+
+					var timeout;
+
+					function saveState( scene ) {
+
+						if ( editor.config.getKey( 'autosave' ) === false ) {
+
+							return;
+
+						}
+
+						clearTimeout( timeout );
+
+						timeout = setTimeout( function () {
+
+							editor.signals.savingStarted.dispatch();
+
+							timeout = setTimeout( function () {
+
+								editor.storage.set( editor.toJSON() );
+
+								editor.signals.savingFinished.dispatch();
+
+							}, 100 );
+
+						}, 1000 );
+
+					};
+
+					var signals = editor.signals;
+
+					signals.geometryChanged.add( saveState );
+					signals.objectAdded.add( saveState );
+					signals.objectChanged.add( saveState );
+					signals.objectRemoved.add( saveState );
+					signals.materialChanged.add( saveState );
+					signals.sceneGraphChanged.add( saveState );
+					signals.scriptChanged.add( saveState );
+
+					signals.showModal.add( function ( content ) {
+
+						modal.show( content );
+
+					} );
 
 				} );
 
 				//
 
-				var timeout;
+				document.addEventListener( 'dragover', function ( event ) {
 
-				function saveState( scene ) {
+					event.preventDefault();
+					event.dataTransfer.dropEffect = 'copy';
 
-					if ( editor.config.getKey( 'autosave' ) === false ) {
+				}, false );
 
-						return;
+				document.addEventListener( 'drop', function ( event ) {
+
+					event.preventDefault();
+
+					if ( event.dataTransfer.files.length > 0 ) {
+
+						editor.loader.loadFile( event.dataTransfer.files[ 0 ] );
 
 					}
 
-					clearTimeout( timeout );
+				}, false );
 
-					timeout = setTimeout( function () {
+				document.addEventListener( 'keydown', function ( event ) {
 
-						editor.signals.savingStarted.dispatch();
+					switch ( event.keyCode ) {
 
-						timeout = setTimeout( function () {
+						case 8:
+							event.preventDefault(); // prevent browser back
 
-							editor.storage.set( editor.toJSON() );
+							var object = editor.selected;
 
-							editor.signals.savingFinished.dispatch();
+							if ( confirm( 'Delete ' + object.name + '?' ) === false ) return;
 
-						}, 100 );
+							var parent = object.parent;
+							editor.removeObject( object );
+							editor.select( parent );
 
-					}, 1000 );
+							break;
 
-				};
+					}
 
-				var signals = editor.signals;
+				}, false );
 
-				signals.geometryChanged.add( saveState );
-				signals.objectAdded.add( saveState );
-				signals.objectChanged.add( saveState );
-				signals.objectRemoved.add( saveState );
-				signals.materialChanged.add( saveState );
-				signals.sceneGraphChanged.add( saveState );
-				signals.scriptChanged.add( saveState );
+				function onWindowResize( event ) {
 
-				signals.showModal.add( function ( content ) {
-
-					modal.show( content );
-
-				} );
-
-			} );
-
-			//
-
-			document.addEventListener( 'dragover', function ( event ) {
-
-				event.preventDefault();
-				event.dataTransfer.dropEffect = 'copy';
-
-			}, false );
-
-			document.addEventListener( 'drop', function ( event ) {
-
-				event.preventDefault();
-
-				if ( event.dataTransfer.files.length > 0 ) {
-
-					editor.loader.loadFile( event.dataTransfer.files[ 0 ] );
+					editor.signals.windowResize.dispatch();
 
 				}
 
-			}, false );
+				window.addEventListener( 'resize', onWindowResize, false );
 
-			document.addEventListener( 'keydown', function ( event ) {
+				onWindowResize();
 
-				switch ( event.keyCode ) {
+				//
 
-					case 8:
-						event.preventDefault(); // prevent browser back
+				var file = null;
+				var hash = window.location.hash;
 
-						var object = editor.selected;
+				if ( hash.substr( 1, 4 ) === 'app=' ) file = hash.substr( 5 );
+				if ( hash.substr( 1, 6 ) === 'scene=' ) file = hash.substr( 7 );
 
-						if ( confirm( 'Delete ' + object.name + '?' ) === false ) return;
+				if ( file !== null ) {
 
-						var parent = object.parent;
-						editor.removeObject( object );
-						editor.select( parent );
+					if ( confirm( 'Any unsaved data will be lost. Are you sure?' ) ) {
 
-						break;
+						var loader = new THREE.XHRLoader();
+						loader.crossOrigin = '';
+						loader.load( file, function ( text ) {
 
-				}
+							var json = JSON.parse( text );
 
-			}, false );
+							editor.clear();
+							editor.fromJSON( json );
 
-			function onWindowResize( event ) {
+						} );
 
-				editor.signals.windowResize.dispatch();
-
-			}
-
-			window.addEventListener( 'resize', onWindowResize, false );
-
-			onWindowResize();
-
-			//
-
-			var file = null;
-			var hash = window.location.hash;
-
-			if ( hash.substr( 1, 4 ) === 'app=' ) file = hash.substr( 5 );
-			if ( hash.substr( 1, 6 ) === 'scene=' ) file = hash.substr( 7 );
-
-			if ( file !== null ) {
-
-				if ( confirm( 'Any unsaved data will be lost. Are you sure?' ) ) {
-
-					var loader = new THREE.XHRLoader();
-					loader.crossOrigin = '';
-					loader.load( file, function ( text ) {
-
-						var json = JSON.parse( text );
-
-						editor.clear();
-						editor.fromJSON( json );
-
-					} );
+					}
 
 				}
 
-			}
+				window.addEventListener( 'message', function ( event ) {
 
-			window.addEventListener( 'message', function ( event ) {
+					editor.clear();
+					editor.fromJSON( event.data );
 
-				editor.clear();
-				editor.fromJSON( event.data );
-
-			}, false );
+				}, false );
+			});
 
 		</script>
+		<!-- build:remove -->
+		<script src="lib/requirejs/require.js"></script>
+		<script src="conf.js"></script>
+		<!-- /build -->
+		<script src="main.js"></script>
+	</head>
+	<body ontouchstart="">
+		<cp-root-layout class="cp-def cp-fill" ng-cloak></cp-root-layout>
 	</body>
 </html>

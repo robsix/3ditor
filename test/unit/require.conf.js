@@ -17,6 +17,7 @@ requirejs.config({
         text: '../lib/requirejs-text/text',
         registry: '../registry',
         service: '../service',
+        cpStyle: '../cpStyle',
         topLevelCss: '../topLevel.css',
         ngMock: '../lib/angular-mocks/angular-mocks'
     },

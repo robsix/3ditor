@@ -1,0 +1,12 @@
+@import "../../global";
+
+cp-root-layout {
+  > ng-view{
+    @include fill();
+  }
+}
+
+html, body, cp-root-layout{
+  @include default();
+  @include fill();
+}

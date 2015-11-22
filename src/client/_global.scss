@@ -1,0 +1,45 @@
+/**
+ * START CONSTANTS
+ */
+
+$fontFamily: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+
+/**
+ * END CONSTANTS
+ */
+
+/**
+ * START MIXINS
+ */
+@mixin default($position: relative, $display: inline-flex, $flexDirection: column, $margin: 0, $border: 0, $padding: 0, $overflow: hidden){
+  position: $position;
+  display: $display;
+  flex-direction: $flexDirection;
+  margin: $margin;
+  border: $border;
+  padding: $padding;
+  overflow: $overflow;
+}
+
+@mixin fill($width: 100%, $height: 100%){
+  width: $width;
+  height: $height;
+}
+
+@mixin theme($color: white, $background: rgba(0,0,0,0), $fontFamily: $fontFamily, $fontSize: 14px, $fontWeight: normal){
+  color: $color;
+  background: $background;
+  font-family: $fontFamily;
+  font-size: $fontSize;
+  font-weight: $fontWeight;
+}
+
+@mixin ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/**
+ * END MIXINS
+ */
